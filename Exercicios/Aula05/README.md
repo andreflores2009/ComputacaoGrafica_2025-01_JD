@@ -5,13 +5,13 @@ Este projeto demonstra como desenhar um círculo usando **OpenGL** e **Pygame**.
 ## Como Funciona?
 O círculo é desenhado com a seguinte equação paramétrica:
 
-\[
-x = r \cdot \cos(	heta)
-\]
+```math
+x = r \cdot \cos(\theta)
+```
 
-\[
-y = r \cdot \sin(	heta)
-\]
+```math
+y = r \cdot \sin(\theta)
+```
 
 onde:
 - \( r \) é o **raio** do círculo.
