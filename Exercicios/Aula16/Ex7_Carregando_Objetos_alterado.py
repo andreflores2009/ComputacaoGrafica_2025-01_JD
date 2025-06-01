@@ -1,4 +1,3 @@
-
 # Ex7_Carregando_Objeto.py
 # Renderiza um modelo OBJ com textura usando OpenGL moderno (VAO/VBO, shaders).
 # Simplificado: carrega apenas vértices e UVs (sem normais) para facilitar o entendimento.
