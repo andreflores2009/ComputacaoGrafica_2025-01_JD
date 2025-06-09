@@ -210,7 +210,8 @@ def render_loop():
         # limpar tela
         glClearColor(0.1,0.1,0.1,1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        
+
+         #Usa o programa de shaders
         glUseProgram(program)
         
         # view/proj
