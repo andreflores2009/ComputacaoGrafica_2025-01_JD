@@ -210,12 +210,24 @@ def render_loop():
         # limpar tela
         glClearColor(0.1,0.1,0.1,1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-
-         #Usa o programa de shaders
+        
+        #Usa o programa de shaders
         glUseProgram(program)
         
         # view/proj
+        # Cria a matriz 'view' (câmera):
+        # - Origem: cam_pos
+        # - Alvo:   cam_pos + cam_front (ponto à frente da câmera)
+        # - Vetor up: cam_up
+        # - Tipo de dado: np.float32 (compatível com OpenGL)
         view = pyrr.matrix44.create_look_at(cam_pos,cam_pos+cam_front,cam_up,dtype=np.float32)
+        
+        # Cria a matriz de projeção em perspectiva:
+        # - FOV (campo de visão) de 45 graus
+        # - Aspect ratio igual a WIDTH/HEIGHT
+        # - Plano próximo (near) em 0.1
+        # - Plano distante (far) em 100.0
+        # - Tipo de dado: np.float32 (compatível com OpenGL)
         proj = pyrr.matrix44.create_perspective_projection_matrix(45.0,WIDTH/HEIGHT,0.1,100.0,dtype=np.float32)
         
         # envia uniforms
@@ -226,10 +238,17 @@ def render_loop():
         glUniform1f(loc(program,"u_time"),current_time)
         
         # desenha cubo
+        # 1) Seleciona a texture unit 0 (corresponde ao sampler2D 'texture1')
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D,texture_id)
+        # 2) Vincula a textura carregada a essa unidade
+        glBindTexture(GL_TEXTURE_2D, texture_id)
+        # 3) Vincula o VAO contendo posição e UV do cubo
         glBindVertexArray(vao)
-        glDrawArrays(GL_TRIANGLES,0,36)
+        # 4) Emite o draw call para 36 vértices 
+        glDrawArrays(GL_TRIANGLES, 0, 36)
+        # 5) Troca os buffers para exibir o frame renderizado
+        
+        # swap_buffers(windows) serve para exibir o frame renderizado
         glfw.swap_buffers(window)
     glfw.terminate()
 
