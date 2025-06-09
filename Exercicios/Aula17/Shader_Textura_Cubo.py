@@ -48,32 +48,38 @@ def inicializa_shaders():
     global program
     # vertex shader
     vertex_src = """
-#version 400 core
-layout(location=0) in vec3 in_pos;
-layout(location=1) in vec2 in_uv;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-out vec2 frag_uv;
-void main() {
-    frag_uv = in_uv;
-    gl_Position = projection * view * model * vec4(in_pos,1.0);
-}
-"""
+        #version 400 core
+        layout(location=0) in vec3 in_pos;
+        layout(location=1) in vec2 in_uv;
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
+        out vec2 frag_uv;
+        void main() {
+            frag_uv = in_uv;
+            gl_Position = projection * view * model * vec4(in_pos,1.0);
+        }
+        """
+   
     # fragment shader
+        # - Recebe as coordenadas UV interpoladas (frag_uv)
+        # - Amostra a cor da textura através de texture(texture1, frag_uv)
+        # - Calcula um pulso senoidal absoluto para variar entre 0 e 1
+        # - Interpola entre verde e vermelho com mix()
+        # - Aplica essa cor pulsante sobre a textura (multiplicação)
     fragment_src = """
-#version 400 core
-in vec2 frag_uv;
-uniform sampler2D texture1;
-uniform float u_time;
-out vec4 FragColor;
-void main() {
-    vec4 tex = texture(texture1, frag_uv);
-    float pulse = abs(sin(u_time));
-    vec3 color = mix(vec3(0.0,1.0,0.0), vec3(1.0,0.0,0.0), pulse);
-    FragColor = vec4(tex.rgb * color, tex.a);
-}
-"""
+        #version 400 core
+        in vec2 frag_uv;
+        uniform sampler2D texture1;
+        uniform float u_time;
+        out vec4 FragColor;
+        void main() {
+            vec4 tex = texture(texture1, frag_uv);
+            float pulse = abs(sin(u_time));
+            vec3 color = mix(vec3(0.0,1.0,0.0), vec3(1.0,0.0,0.0), pulse);
+            FragColor = vec4(tex.rgb * color, tex.a);
+        }
+        """
     vs = OpenGL.GL.shaders.compileShader(vertex_src, GL_VERTEX_SHADER)
     fs = OpenGL.GL.shaders.compileShader(fragment_src, GL_FRAGMENT_SHADER)
     program = OpenGL.GL.shaders.compileProgram(vs, fs)
@@ -86,50 +92,105 @@ def inicializa_resources():
     stride = 5 * ctypes.sizeof(ctypes.c_float)
     vertices = np.array([
         # front
-        -0.5,-0.5,0.5, 0.0,0.0,  0.5,-0.5,0.5, 1.0,0.0,  0.5,0.5,0.5, 1.0,1.0,
-        -0.5,-0.5,0.5, 0.0,0.0,  0.5,0.5,0.5, 1.0,1.0, -0.5,0.5,0.5, 0.0,1.0,
+       -0.5,-0.5,0.5, 0.0,0.0,  
+        0.5,-0.5,0.5, 1.0,0.0,  
+        0.5,0.5,0.5,  1.0,1.0,
+       -0.5,-0.5,0.5, 0.0,0.0,  
+        0.5,0.5,0.5,  1.0,1.0, 
+       -0.5,0.5,0.5,  0.0,1.0,
         # back
-        -0.5,-0.5,-0.5,1.0,0.0, -0.5,0.5,-0.5,1.0,1.0,  0.5,0.5,-0.5,0.0,1.0,
-        -0.5,-0.5,-0.5,1.0,0.0,  0.5,0.5,-0.5,0.0,1.0,  0.5,-0.5,-0.5,0.0,0.0,
+       -0.5,-0.5,-0.5, 1.0,0.0, 
+       -0.5,0.5,-0.5,  1.0,1.0,  
+        0.5,0.5,-0.5,  0.0,1.0,
+       -0.5,-0.5,-0.5, 1.0,0.0,  
+        0.5,0.5,-0.5,  0.0,1.0,  
+        0.5,-0.5,-0.5, 0.0,0.0,
         # left
-        -0.5,-0.5,-0.5,0.0,0.0, -0.5,-0.5,0.5,1.0,0.0, -0.5,0.5,0.5,1.0,1.0,
-        -0.5,-0.5,-0.5,0.0,0.0, -0.5,0.5,0.5,1.0,1.0, -0.5,0.5,-0.5,0.0,1.0,
+       -0.5,-0.5,-0.5, 0.0,0.0, 
+       -0.5,-0.5,0.5,  1.0,0.0, 
+       -0.5,0.5,0.5,   1.0,1.0,
+       -0.5,-0.5,-0.5, 0.0,0.0, 
+       -0.5,0.5,0.5,   1.0,1.0, 
+       -0.5,0.5,-0.5,  0.0,1.0,
         # right
-         0.5,-0.5,-0.5,1.0,0.0,  0.5,0.5,-0.5,1.0,1.0,  0.5,0.5,0.5,0.0,1.0,
-         0.5,-0.5,-0.5,1.0,0.0,  0.5,0.5,0.5,0.0,1.0,  0.5,-0.5,0.5,0.0,0.0,
+         0.5,-0.5,-0.5, 1.0,0.0,  
+         0.5,0.5,-0.5,  1.0,1.0,  
+         0.5,0.5,0.5,   0.0,1.0,
+         0.5,-0.5,-0.5, 1.0,0.0,  
+         0.5,0.5,0.5,   0.0,1.0,  
+         0.5,-0.5,0.5,  0.0,0.0,
         # top
-        -0.5,0.5,-0.5,0.0,1.0, -0.5,0.5,0.5,0.0,0.0,  0.5,0.5,0.5,1.0,0.0,
-        -0.5,0.5,-0.5,0.0,1.0,  0.5,0.5,0.5,1.0,0.0,  0.5,0.5,-0.5,1.0,1.0,
+        -0.5,0.5,-0.5, 0.0,1.0, 
+        -0.5,0.5,0.5,  0.0,0.0,  
+        0.5,0.5,0.5,   1.0,0.0,
+        -0.5,0.5,-0.5, 0.0,1.0,  
+        0.5,0.5,0.5,   1.0,0.0,  
+        0.5,0.5,-0.5,  1.0,1.0,
         # bottom
-        -0.5,-0.5,-0.5,0.0,0.0, 0.5,-0.5,-0.5,1.0,0.0, 0.5,-0.5,0.5,1.0,1.0,
-        -0.5,-0.5,-0.5,0.0,0.0, 0.5,-0.5,0.5,1.0,1.0, -0.5,-0.5,0.5,0.0,1.0,
+        -0.5,-0.5,-0.5, 0.0,0.0, 
+        0.5,-0.5,-0.5,  1.0,0.0, 
+        0.5,-0.5,0.5,   1.0,1.0,
+        -0.5,-0.5,-0.5, 0.0,0.0, 
+        0.5,-0.5,0.5,   1.0,1.0, 
+        -0.5,-0.5,0.5,  0.0,1.0,
     ], dtype=np.float32)
+
+    # 1) Gera e registra um VAO (vertex array object)
     vao = glGenVertexArrays(1)
+    # 2) Gera e registra um VBO (vertex buffer object)
     vbo = glGenBuffers(1)
+    # 3) Vincula o VAO para configurar os atributos
     glBindVertexArray(vao)
+    # 4) Vincula o VBO e envia os dados de vértice (posição + UV)
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+    
+    # 5) Habilita e define o atributo 0 para as coordenadas de posição (x,y,z)
     glEnableVertexAttribArray(0)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
+    
+    # 6) Habilita e define o atributo 1 para as coordenadas de textura (u,v)
     glEnableVertexAttribArray(1)
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(3*ctypes.sizeof(ctypes.c_float)))
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(3 * ctypes.sizeof(ctypes.c_float)))  
+    # pula os 3 primeiros floats (x,y,z) para ler os componentes de textura (u,v)
+
+    # 7) Desvincula o VAO para evitar configurações acidentais posteriores
     glBindVertexArray(0)
-    # carrega textura.jpg
-    img = Image.open("textura.jpg").transpose(Image.FLIP_TOP_BOTTOM)
-    data = img.convert("RGBA").tobytes()
-    w,h = img.size
+    
+    
+    
+    # carrega a imagem "textura.jpg" do disco e prepara os dados
+    img = Image.open("textura.jpg").transpose(Image.FLIP_TOP_BOTTOM)  # inverte verticalmente para coordenadas UV
+    data = img.convert("RGBA").tobytes()                             # converte para bytes RGBA
+    w, h = img.size                                                  # obtém largura e altura
+
+    # gera um ID de textura no OpenGL e vincula como GL_TEXTURE_2D
     texture_id = glGenTextures(1)
+    glActiveTexture(GL_TEXTURE0)            # seleciona a texture unit 0
     glBindTexture(GL_TEXTURE_2D, texture_id)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_RGBA,GL_UNSIGNED_BYTE,data)
-    glBindTexture(GL_TEXTURE_2D,0)
+
+    # Define como a textura será filtrada quando ampliada/reduzida
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)  # filtragem linear para minification
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)  # filtragem linear para magnification
+
+    # Envia os dados da imagem para a GPU (nível 0, formato RGBA)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
+
+    # Desvincula a textura da unidade para evitar efeitos colaterais
+    glBindTexture(GL_TEXTURE_2D, 0)
+
+    # Vincula o sampler 'texture1' do fragment shader à texture unit 0
+    glUseProgram(program)
+    loc = glGetUniformLocation(program, "texture1")  # obtém localização do uniform sampler2D
+    glUniform1i(loc, 0)                               # configura para usar GL_TEXTURE0
+
 
 # ---------- Loop principal ----------
 def render_loop():
     """Loop de eventos e renderização com WSAD."""
     global start_time, cam_pos
     start_time = time.time()
+    
     model = pyrr.matrix44.create_identity(dtype=np.float32)
     while not glfw.window_should_close(window):
         current_time = time.time() - start_time
@@ -145,19 +206,24 @@ def render_loop():
           cam_pos += right*speed
         if glfw.get_key(window, glfw.KEY_A)==glfw.PRESS: 
           cam_pos -= right*speed
+        
         # limpar tela
         glClearColor(0.1,0.1,0.1,1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        
         glUseProgram(program)
+        
         # view/proj
         view = pyrr.matrix44.create_look_at(cam_pos,cam_pos+cam_front,cam_up,dtype=np.float32)
         proj = pyrr.matrix44.create_perspective_projection_matrix(45.0,WIDTH/HEIGHT,0.1,100.0,dtype=np.float32)
+        
         # envia uniforms
         loc = glGetUniformLocation
         glUniformMatrix4fv(loc(program,"model"),1,GL_FALSE,model)
         glUniformMatrix4fv(loc(program,"view"),1,GL_FALSE,view)
         glUniformMatrix4fv(loc(program,"projection"),1,GL_FALSE,proj)
         glUniform1f(loc(program,"u_time"),current_time)
+        
         # desenha cubo
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,texture_id)
